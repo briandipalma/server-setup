@@ -1,48 +1,59 @@
+---
 version: "2.1"
 services:
   jellyfin:
-    image: jellyfin/jellyfin
-    user: 1000:1000
-    network_mode: "host"
+    image: ghcr.io/linuxserver/jellyfin
+    container_name: jellyfin
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Dublin
+      - UMASK_SET=022
     volumes:
-      # This can grown large, 50gb+ for a large collection
       - ${APP_DATA_DIR}/jellyfin-config:/config
-      - ${APP_DATA_DIR}/jellyfin-cache:/cache
-      - ${MEDIA_DIR}/tvshows:/media/tvshows
-      - ${MEDIA_DIR}/movies:/media/movies
+      - ${MEDIA_DIR}/tvseries:/data/tvshows
+      - ${MEDIA_DIR}/movies:/data/movies
     ports:
       - 8096:8096
+      - 8920:8920 # optional
+      - 7359:7359/udp # optional
+      - 1900:1900/udp # optional
     restart: unless-stopped
+
   sonarr:
-    image: linuxserver/sonarr
+    image: ghcr.io/linuxserver/sonarr
     container_name: sonarr
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/Dublin
+      - UMASK_SET=022 #optional
     volumes:
       - ${APP_DATA_DIR}/sonarr-config:/config
-      - ${MEDIA_DIR}/tvshows:/tv
-      - ${DOWNLOADS_DIR}/transmission-downloads/complete:/downloads
+      - ${MEDIA_DIR}/tvseries:/tv
+      - ${DOWNLOADS_DIR}:/downloads
     ports:
       - 8989:8989
     restart: unless-stopped
+
   radarr:
-    image: linuxserver/radarr
+    image: ghcr.io/linuxserver/radarr
     container_name: radarr
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Europe/Dublin
+      - UMASK_SET=022 #optional
     volumes:
       - ${APP_DATA_DIR}/radarr-config:/config
       - ${MEDIA_DIR}/movies:/movies
-      - ${DOWNLOADS_DIR}/transmission-downloads/complete:/downloads
+      - ${DOWNLOADS_DIR}:/downloads
     ports:
       - 7878:7878
     restart: unless-stopped
+
   nzbget:
-    image: linuxserver/nzbget
+    image: ghcr.io/linuxserver/nzbget
     container_name: nzbget
     environment:
       - PUID=1000
@@ -50,12 +61,13 @@ services:
       - TZ=Europe/Dublin
     volumes:
       - ${APP_DATA_DIR}/nzbget-config:/config
-      - ${DOWNLOADS_DIR}/nzbget-downloads:/downloads
+      - ${DOWNLOADS_DIR}:/downloads
     ports:
       - 6789:6789
     restart: unless-stopped
+
   transmission:
-    image: linuxserver/transmission
+    image: ghcr.io/linuxserver/transmission
     container_name: transmission
     environment:
       - PUID=1000
@@ -65,23 +77,10 @@ services:
       - PASS=password #optional
     volumes:
       - ${APP_DATA_DIR}/transmission-config:/config
-      - ${DOWNLOADS_DIR}/transmission-downloads:/downloads
+      - ${DOWNLOADS_DIR}:/downloads
       - ${APP_DATA_DIR}/transmission-watch:/watch
     ports:
       - 9091:9091
       - 51413:51413
       - 51413:51413/udp
     restart: unless-stopped
-  jackett:
-    image: linuxserver/jackett
-    container_name: jackett
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/Dublin
-    volumes:
-      - ${APP_DATA_DIR}/jackett-config:/config
-    ports:
-      - 9117:9117
-    restart: unless-stopped
-
