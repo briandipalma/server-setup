@@ -52,6 +52,20 @@ services:
       - 7878:7878
     restart: unless-stopped
 
+  nzbhydra2:
+    image: ghcr.io/linuxserver/nzbhydra2
+    container_name: nzbhydra2
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Dublin
+    volumes:
+      - ${APP_DATA_DIR}/nzbhydra2-config:/config
+      - ${DOWNLOADS_DIR}:/downloads
+    ports:
+      - 5076:5076
+    restart: unless-stopped
+
   jackett:
     image: ghcr.io/linuxserver/jackett
     container_name: jackett
